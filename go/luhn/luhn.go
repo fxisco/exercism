@@ -8,8 +8,14 @@ func Valid(str string) (result bool) {
 
 	if len(str) > 0 {
 		// Remover los caracteres que no sean numericos
-		rule := regexp.MustCompile(`[^0-9]`)
-		newStr := rule.ReplaceAllString(str, "")
+		allowedChars := regexp.MustCompile(`[^0-9 ]`)
+		digitsRule := regexp.MustCompile(`[^0-9]`)
+		newStr := digitsRule.ReplaceAllString(str, "")
+		notAllowedChars := allowedChars.FindAllString(str, -1)
+
+		if len(notAllowedChars) > 0 {
+			return
+		}
 
 		var total int
 		strLen := len(newStr) - 1
@@ -36,8 +42,9 @@ func Valid(str string) (result bool) {
 		}
 
 		// Check if the sum of all digits % 10 is equal 0
+		// more than a single zero is valid
 
-		if total > 0 && (total%10) == 0 {
+		if (total > 0 && (total%10) == 0) || (total == 0 && strLen > 0) {
 			result = true
 		}
 	}
