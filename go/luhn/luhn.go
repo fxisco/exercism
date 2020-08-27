@@ -7,7 +7,6 @@ import (
 func Valid(str string) (result bool) {
 
 	if len(str) > 0 {
-		// Remover los caracteres que no sean numericos
 		allowedChars := regexp.MustCompile(`[^0-9 ]`)
 		digitsRule := regexp.MustCompile(`[^0-9]`)
 		newStr := digitsRule.ReplaceAllString(str, "")
