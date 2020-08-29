@@ -2,6 +2,8 @@ package clock
 
 import "fmt"
 
+// Followed suggested solution, made a little improvement for the sake of readibility
+
 type Clock int
 
 const DAY_IN_MINUTES = 1440
