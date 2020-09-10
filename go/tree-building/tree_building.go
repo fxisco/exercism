@@ -1,6 +1,9 @@
 package tree
 
-import "errors"
+import (
+	"errors"
+	"sort"
+)
 
 type Record struct {
 	ID     int
@@ -11,6 +14,12 @@ type Node struct {
 	ID       int
 	Children []*Node
 }
+
+type NodeSlice []*Node
+
+func (n NodeSlice) Len() int           { return len(n) }
+func (n NodeSlice) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
+func (n NodeSlice) Less(i, j int) bool { return n[i].ID < n[j].ID }
 
 func Build(records []Record) (root *Node, err error) {
 	if len(records) == 0 {
@@ -55,6 +64,7 @@ func Build(records []Record) (root *Node, err error) {
 		for _, v := range m {
 			if v.ID != 0 && r[v.ID].Parent == index {
 				m[index].Children = append(m[index].Children, v)
+				sort.Sort(NodeSlice(m[index].Children))
 			}
 		}
 
