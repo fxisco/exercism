@@ -1,13 +1,12 @@
 package tree
 
 import (
-	"errors"
+	"fmt"
 	"sort"
 )
 
 type Record struct {
-	ID     int
-	Parent int
+	ID, Parent int
 }
 
 type Node struct {
@@ -21,55 +20,43 @@ func (n NodeSlice) Len() int           { return len(n) }
 func (n NodeSlice) Swap(i, j int)      { n[i], n[j] = n[j], n[i] }
 func (n NodeSlice) Less(i, j int) bool { return n[i].ID < n[j].ID }
 
-func Build(records []Record) (root *Node, err error) {
+func Build(records []Record) (*Node, error) {
 	if len(records) == 0 {
 		return nil, nil
 	}
 
-	r := make(map[int]Record)
-	m := make(map[int]*Node)
+	// At the end of this function this will hold: nodes[i].ID == i
+	nodes := make([]Node, len(records))
+	parents := make([]*Node, len(records))
+	seen := make([]bool, len(records))
 
-	// Check for duplicates
-	// Check parent ID, shout be the same if node is 0 or
-	// should have a lower ID
-	for _, item := range records {
-		_, prs := m[item.ID]
-
-		if item.Parent >= item.ID && item.ID != 0 {
-			err = errors.New("Parent ID")
-			break
+	for _, record := range records {
+		if record.ID >= len(records) {
+			return nil, fmt.Errorf("Too high id %d", record.ID)
 		}
-
-		if !prs {
-			r[item.ID] = item
-			m[item.ID] = &Node{ID: item.ID}
-		} else {
-			err = errors.New("Repeated node")
-			break
+		if record.ID != 0 && record.ID <= record.Parent {
+			return nil, fmt.Errorf("Record %d has self or later parent %d", record.ID, record.Parent)
+		}
+		if seen[record.ID] {
+			return nil, fmt.Errorf("Record with id %d occurs multiple times", record.ID)
+		}
+		seen[record.ID] = true
+		if record.ID != 0 {
+			parents[record.ID] = &nodes[record.Parent]
+		} else if record.Parent != 0 {
+			return nil, fmt.Errorf("Root node has non-0 parent %d", record.Parent)
 		}
 	}
 
-	if err != nil {
-		return
-	}
-	root, ok := m[0]
-
-	if len(m) == 1 && ok {
-		return root, nil
+	for i := 1; i < len(nodes); i++ {
+		parents[i].Children = append(parents[i].Children, &nodes[i])
 	}
 
-	index := 0
-
-	for index < len(records) {
-		for _, v := range m {
-			if v.ID != 0 && r[v.ID].Parent == index {
-				m[index].Children = append(m[index].Children, v)
-				sort.Sort(NodeSlice(m[index].Children))
-			}
-		}
-
-		index++
+	for i, node := range nodes {
+		// The ID field isn't actually used in this function, so we can delay
+		// setting it to an opportune moment.
+		nodes[i].ID = i
+		sort.Sort(NodeSlice(node.Children))
 	}
-
-	return m[0], nil
+	return &nodes[0], nil
 }
