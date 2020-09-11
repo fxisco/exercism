@@ -7,7 +7,6 @@ import (
 
 type Robot struct {
 	RobotName string
-	seen      map[string]int
 }
 
 const (
@@ -15,18 +14,25 @@ const (
 	MAX = 90
 )
 
-func (r *Robot) Name() (string, error) {
-	var result string
+var assigned = map[string]int{}
 
+func (r *Robot) Name() (string, error) {
+	if len(r.RobotName) > 0 {
+		return r.RobotName, nil
+	}
+
+	var result string
 	finish := false
 
 	for !finish {
+		result = ""
+
 		for i := 0; i < 2; i++ {
 			first := rand.Intn(MAX-MIN) + MIN
 			result += string(rune(first))
 		}
 
-		item, _ := r.seen[result]
+		item, _ := assigned[result]
 		item++
 
 		if item < 1000 {
