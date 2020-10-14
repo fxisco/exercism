@@ -2,6 +2,7 @@ package tournament
 
 import (
 	"encoding/csv"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -13,7 +14,15 @@ type register struct {
 	loss int
 }
 
-func Tally(reader io.Reader, buffer io.Writer) error {
+func (reg *register) getMatchPlayed() int {
+	return reg.win + reg.draw + reg.loss
+}
+
+func (reg *register) getPoints() int {
+	return 3*reg.win + reg.draw
+}
+
+func getPunctuationsTable(reader io.Reader) (error, map[string]*register) {
 	csvReader := csv.NewReader(reader)
 	csvReader.Comma = ';'
 	csvReader.Comment = '#'
@@ -29,7 +38,7 @@ func Tally(reader io.Reader, buffer io.Writer) error {
 		}
 
 		if err != nil {
-			return err
+			return err, nil
 		}
 
 		teamA, prsA := m[record[0]]
@@ -60,8 +69,18 @@ func Tally(reader io.Reader, buffer io.Writer) error {
 		m[record[1]] = teamB
 	}
 
-	for k, v := range m {
-		fmt.Printf("key[%s] value[%v]\n", k, v)
+	return nil, m
+}
+
+func Tally(reader io.Reader, buffer io.Writer) error {
+	err, table := getPunctuationsTable(reader)
+
+	if err != nil {
+		return errors.New("Problem with table")
+	}
+
+	for k, v := range table {
+		fmt.Printf("key[%s] value[%v]: Points: %d , MP: %d \n", k, v, v.getPoints(), v.getMatchPlayed())
 	}
 
 	buffer.Write([]byte("Team                           | MP |  W |  D |  L |  P"))
