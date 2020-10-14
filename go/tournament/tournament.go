@@ -79,11 +79,12 @@ func Tally(reader io.Reader, buffer io.Writer) error {
 		return errors.New("Problem with table")
 	}
 
-	for k, v := range table {
-		fmt.Printf("key[%s] value[%v]: Points: %d , MP: %d \n", k, v, v.getPoints(), v.getMatchPlayed())
-	}
+	buffer.Write([]byte("Team                           | MP |  W |  D |  L |  P\n"))
 
-	buffer.Write([]byte("Team                           | MP |  W |  D |  L |  P"))
+	for k, v := range table {
+		s := fmt.Sprintf("%-31s| %2d | %2d | %2d | %2d | %2d\n", k, v.getMatchPlayed(), v.win, v.draw, v.loss, v.getPoints())
+		buffer.Write([]byte(s))
+	}
 
 	return nil
 }
