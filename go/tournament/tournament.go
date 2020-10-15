@@ -75,16 +75,17 @@ func getPunctuationsTable(reader io.Reader) (error, map[string]*register) {
 			teamB = &register{name: record[1]}
 		}
 
-		if action == "win" {
+		switch action {
+		case "win":
 			teamA.win++
 			teamB.loss++
-		} else if action == "loss" {
+		case "loss":
 			teamA.loss++
 			teamB.win++
-		} else if action == "draw" {
+		case "draw":
 			teamA.draw++
 			teamB.draw++
-		} else {
+		default:
 			return errors.New("GAME RESULT: Bad format"), nil
 		}
 
