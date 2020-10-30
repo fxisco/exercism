@@ -22,7 +22,15 @@ const (
 func KindFromSides(a, b, c float64) Kind {
 	// Condition 1: all sizes lenght > 0
 	// L1 + L2 >= L3
-	if (math.IsNaN(a) || math.IsNaN(b) || math.IsNaN(c)) || (math.IsInf(a, 1) || math.IsInf(b, 1) || math.IsInf(c, 1)) || (math.IsInf(a, -1) || math.IsInf(b, -1) || math.IsInf(c, -1)) || (a <= 0 || b <= 0 || c <= 0) || a+b < c || a+c < b || c+b < a {
+	sides := []float64{a, b, c}
+
+	for _, element := range sides {
+		if math.IsNaN(element) || math.IsInf(element, 1) || math.IsInf(element, -1) || element <= 0 {
+			return NaT
+		}
+	}
+
+	if a+b < c || a+c < b || b+c < a {
 		return NaT
 	}
 
